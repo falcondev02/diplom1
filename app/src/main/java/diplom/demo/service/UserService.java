@@ -8,8 +8,10 @@ import diplom.demo.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -25,7 +27,14 @@ public class UserService {
                 .map(UserDto::from)
                 .toList();
     }*/
-  public Page<UserDto> getAllUsers(Pageable pageable) {
+  // UserService.java
+  public void deleteUser(Long id) {
+      if (!userRepo.existsById(id))
+          throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+      userRepo.deleteById(id);
+  }
+
+    public Page<UserDto> getAllUsers(Pageable pageable) {
       return userRepo.findAll(pageable)
               .map(UserDto::from);
   }

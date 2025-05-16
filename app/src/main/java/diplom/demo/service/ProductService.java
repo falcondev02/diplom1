@@ -57,6 +57,7 @@ public class ProductService {
                 .description(dto.description())
                 .priceCents(dto.priceCents())
                 .imageUrl(dto.imageUrl())
+                .inStock(dto.inStock())          // 🆕
                 .category(category)
                 .build();
 
@@ -76,9 +77,11 @@ public class ProductService {
         existing.setPriceCents(dto.priceCents());
         existing.setImageUrl(dto.imageUrl());
         existing.setCategory(category);
+        existing.setInStock(dto.inStock());      // 🆕
 
         return ProductDto.from(existing);
     }
+
 
     public void delete(Long id) {
         adminGuard();

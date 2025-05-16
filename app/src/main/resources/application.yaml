@@ -3,7 +3,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/souvenir_shop
+    url: jdbc:postgresql://localhost:5432/souvenir_shop3
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver

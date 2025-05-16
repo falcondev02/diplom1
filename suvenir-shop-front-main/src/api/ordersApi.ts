@@ -16,10 +16,10 @@ export const ordersApi = api.injectEndpoints({
       transformResponse: (orders: any[]) =>
         orders.map((order) => ({
           ...order,
-          totalSum: order.totalSumCents / 100,
+          totalSum: order.totalSumCents,
           items: order.items.map((item: any) => ({
             ...item,
-            price: item.priceCents / 100,
+            priceCents: item.priceCents,
           })),
         })),
     }),
@@ -33,10 +33,10 @@ export const ordersApi = api.injectEndpoints({
         ...resp,
         content: resp.content.map((order: any) => ({
           ...order,
-          totalSum: order.totalSumCents / 100,
+          totalSum: order.totalSumCents,
           items: order.items.map((item: any) => ({
             ...item,
-            price: item.priceCents / 100,
+            priceCents: item.priceCents,
           })),
         })),
       }),

@@ -28,7 +28,8 @@ public class Product {
     private Integer priceCents;
 
     private String imageUrl;
-
+    @Column(name = "in_stock", nullable = false)
+    private Integer inStock;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
     private ProductCategory category;

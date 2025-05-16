@@ -22,19 +22,24 @@ CREATE TABLE IF NOT EXISTS products (
   description TEXT,
   price_cents INT NOT NULL,
   image_url TEXT,
+  in_stock INT NOT NULL DEFAULT 0,      -- 🆕
+
   category_id INT NOT NULL
       REFERENCES product_categories(id) ON DELETE RESTRICT
 );
 
 -- Заказы (ВМЕСТО ENUM — просто VARCHAR)
+-- Заказы (добавлено поле address)
 CREATE TABLE IF NOT EXISTS orders (
   id SERIAL PRIMARY KEY,
   user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   status VARCHAR(50) NOT NULL DEFAULT 'NEW',
+  address TEXT NOT NULL,                       -- 🆕 ОБЯЗАТЕЛЬНО
   note TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
 
 -- Позиции заказа
 CREATE TABLE IF NOT EXISTS order_items (

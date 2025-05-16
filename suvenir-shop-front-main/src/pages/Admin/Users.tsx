@@ -1,109 +1,109 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
-  Typography,
-  Table,
-  Button,
-  Space,
-  Modal,
-  Form,
-  Input,
-  Select,
-  notification,
-  Spin,
+  Typography, Table, Button, Space, Modal, Form, Input, Select,
+  Popconfirm, notification, Spin,
 } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
-import { useGetUsersQuery, useCreateUserMutation } from '../../api/usersApi';
+import {
+  useGetUsersQuery,
+  useCreateUserMutation,
+  useDeleteUserMutation,
+} from '../../api/usersApi';
 import { User } from '../../types';
 
 const { Title } = Typography;
 const { Option } = Select;
 
 const AdminUsers: React.FC = () => {
-  console.log('[RENDER] AdminUsers mounted'); // ✅ Проверка маунта
-
   const [form] = Form.useForm();
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [currentPage, setCurrentPage] = useState(0);
+  const [modal, setModal] = useState(false);
+  const [page, setPage]   = useState(0);
 
-  const { data: usersData, isLoading, error } = useGetUsersQuery({ page: currentPage, size: 10 });
-  const [createUser, { isLoading: isCreating }] = useCreateUserMutation();
+  const { data, isLoading } = useGetUsersQuery({ page, size: 10 });
+  const [createUser, { isLoading: saving }]   = useCreateUserMutation();
+  const [deleteUser, { isLoading: removing }] = useDeleteUserMutation();
 
-  useEffect(() => {
-    console.log('[DATA] usersData:', usersData); // ✅ Проверка полученных данных
-    if (error) console.error('[ERROR] getUsersQuery failed:', error);
-  }, [usersData, error]);
-
-  const showCreateModal = () => {
-    form.resetFields();
-    setIsModalVisible(true);
-  };
-
-  const handleCancel = () => {
-    setIsModalVisible(false);
-  };
-
-  const handleFormSubmit = async () => {
+  /** создать нового */
+  const save = async () => {
     try {
-      const values = await form.validateFields();
-      await createUser(values).unwrap();
+      const v = await form.validateFields();
+      await createUser(v).unwrap();
       notification.success({ message: 'Пользователь создан' });
-      setIsModalVisible(false);
-    } catch (error) {
-      console.error('Ошибка при создании пользователя:', error);
-    }
+      setModal(false);
+    } catch {}
   };
 
-  const columns = [
-    { title: 'ID', dataIndex: 'id', key: 'id' },
-    { title: 'Имя пользователя', dataIndex: 'username', key: 'username' },
-    { title: 'Роль', dataIndex: 'role', key: 'role' },
+  /** удалить */
+  const del = (id: number) =>
+    deleteUser(id)
+      .unwrap()
+      .then(() => notification.success({ message: 'Удалён' }))
+      .catch(() => notification.error({ message: 'Не удалён' }));
+
+  const cols = [
+    { title: 'ID', dataIndex: 'id' },
+    { title: 'Email', dataIndex: 'username' },
+    { title: 'Роль', dataIndex: 'role' },
+    {
+      title: 'Действия',
+      render: (_: any, r: User) => (
+        <Popconfirm
+          title="Удалить пользователя?"
+          okText="Да" cancelText="Нет"
+          onConfirm={() => del(r.id!)}
+        >
+          <Button danger loading={removing}>
+            Удалить
+          </Button>
+        </Popconfirm>
+      ),
+    },
   ];
 
-  if (isLoading) {
+  if (isLoading)
     return (
       <div className="flex justify-center p-12">
         <Spin size="large" />
       </div>
     );
-  }
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
+    <>
+      <div className="flex justify-between mb-6">
         <Title level={2}>Управление пользователями</Title>
-        <Button type="primary" icon={<PlusOutlined />} onClick={showCreateModal}>
+        <Button icon={<PlusOutlined />} type="primary" onClick={() => setModal(true)}>
           Добавить пользователя
         </Button>
       </div>
 
       <Table
-        columns={columns}
-        dataSource={usersData?.content || []}
+        columns={cols}
+        dataSource={data?.content}
         rowKey="id"
         pagination={{
-          current: currentPage + 1,
-          pageSize: usersData?.size || 10,
-          total: usersData?.totalElements || 0,
-          onChange: (page) => setCurrentPage(page - 1),
+          current: page + 1,
+          pageSize: data?.size,
+          total: data?.totalElements,
+          onChange: p => setPage(p - 1),
         }}
       />
 
       <Modal
-        title="Добавить нового пользователя"
-        open={isModalVisible}
-        onCancel={handleCancel}
-        onOk={handleFormSubmit}
-        confirmLoading={isCreating}
+        title="Новый пользователь"
+        open={modal}
         okText="Создать"
         cancelText="Отмена"
+        confirmLoading={saving}
+        onOk={save}
+        onCancel={() => setModal(false)}
       >
         <Form form={form} layout="vertical">
           <Form.Item
             name="username"
             label="Email"
             rules={[
-              { required: true, message: 'Введите email пользователя' },
-              { type: 'email', message: 'Введите корректный email' },
+              { required: true, message: 'Введите email' },
+              { type: 'email', message: 'Неверный email' },
             ]}
           >
             <Input />
@@ -114,7 +114,7 @@ const AdminUsers: React.FC = () => {
             label="Пароль"
             rules={[
               { required: true, message: 'Введите пароль' },
-              { min: 6, message: 'Пароль должен содержать минимум 6 символов' },
+              { min: 6, message: 'Минимум 6 символов' },
             ]}
           >
             <Input.Password />
@@ -128,7 +128,7 @@ const AdminUsers: React.FC = () => {
           </Form.Item>
         </Form>
       </Modal>
-    </div>
+    </>
   );
 };
 

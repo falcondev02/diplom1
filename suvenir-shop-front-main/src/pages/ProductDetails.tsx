@@ -86,7 +86,7 @@ const ProductDetails: React.FC = () => {
             <Title level={2}>{product.name}</Title>
             
             <Title level={3} className="text-blue-600 mb-6">
-              {product.price.toLocaleString('ru-RU')} ₽
+              {product.priceCents.toLocaleString('ru-RU')} ₽
             </Title>
             
             <Descriptions bordered column={1}>

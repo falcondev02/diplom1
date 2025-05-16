@@ -1,6 +1,8 @@
 package diplom.demo.dto;
 
-import java.util.UUID;
-
-public record OrderItemDto(Long productId, int quantity) {}
-
+public record OrderItemDto(
+        Long productId,
+        int quantity,
+        int priceCents,
+        String name
+) {}

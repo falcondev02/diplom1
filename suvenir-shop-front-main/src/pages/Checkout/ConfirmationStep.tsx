@@ -40,10 +40,10 @@ const ConfirmationStep: React.FC<ConfirmationStepProps> = ({ address, note }) =>
             <List.Item>
               <List.Item.Meta
                 title={item.name}
-                description={`${item.quantity} × ${item.price.toLocaleString('ru-RU')} ₽`}
+                description={`${item.quantity} × ${item.priceCents.toLocaleString('ru-RU')} ₽`}
               />
               <div>
-                {(item.price * item.quantity).toLocaleString('ru-RU')} ₽
+                {(item.priceCents * item.quantity).toLocaleString('ru-RU')} ₽
               </div>
             </List.Item>
           )}

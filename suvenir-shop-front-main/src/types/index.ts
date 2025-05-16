@@ -37,7 +37,7 @@ export interface Category {
 export interface CartItem {
   productId: number;
   name: string;
-  price: number;
+  priceCents: number;
   imageUrl: string;
   quantity: number;
 }
@@ -66,7 +66,7 @@ export interface Order {
 export interface OrderItem {
   productId: number;
   name?: string;
-  price: number;
+  priceCents: number;
   quantity: number;
 }
 

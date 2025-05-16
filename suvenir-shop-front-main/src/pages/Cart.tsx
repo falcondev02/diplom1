@@ -53,9 +53,9 @@ const Cart: React.FC = () => {
     },
     {
       title: 'Цена',
-      dataIndex: 'price',
-      key: 'price',
-      render: (price: number) => `${price.toLocaleString('ru-RU')} ₽`,
+      dataIndex: 'priceCents',
+      key: 'priceCents',
+      render: (priceCents: number) => `${priceCents.toLocaleString('ru-RU')} ₽`,
     },
     {
       title: 'Количество',
@@ -72,7 +72,7 @@ const Cart: React.FC = () => {
       title: 'Сумма',
       key: 'total',
       render: (_: any, record: CartItem) => 
-        `${(record.price * record.quantity).toLocaleString('ru-RU')} ₽`,
+        `${(record.priceCents * record.quantity).toLocaleString('ru-RU')} ₽`,
     },
     {
       title: 'Действия',

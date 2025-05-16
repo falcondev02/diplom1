@@ -5,8 +5,13 @@ import diplom.demo.entity.Product;
 import java.util.UUID;
 
 public record ProductDto(
-        Long id, String name, String description,
-        int priceCents, String imageUrl, Long categoryId
+        Long   id,
+        String name,
+        String description,
+        int    priceCents,
+        String imageUrl,
+        Long   categoryId,
+        int    inStock            // 🆕
 ) {
     public static ProductDto from(Product p) {
         return new ProductDto(
@@ -15,8 +20,9 @@ public record ProductDto(
                 p.getDescription(),
                 p.getPriceCents(),
                 p.getImageUrl(),
-                p.getCategory().getId()
+                p.getCategory().getId(),
+                p.getInStock()
         );
     }
-
 }
+

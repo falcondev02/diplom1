@@ -211,9 +211,9 @@ const AdminOrders: React.FC = () => {
                       <div>{item.name || `Товар #${item.productId}`}</div>
                     </div>
                     <div>
-                      <div>{`${item.quantity} × ${item.price.toLocaleString('ru-RU')} ₽`}</div>
+                      <div>{`${item.quantity} × ${item.priceCents.toLocaleString('ru-RU')} ₽`}</div>
                       <div className="text-right font-bold">
-                        {(item.price * item.quantity).toLocaleString('ru-RU')} ₽
+                        {(item.priceCents * item.quantity).toLocaleString('ru-RU')} ₽
                       </div>
                     </div>
                   </div>

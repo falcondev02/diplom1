@@ -11,7 +11,7 @@ const initialState: CartState = {
 // Пересчет общего количества и суммы
 const recalculateTotals = (state: CartState) => {
   state.totalQty = state.items.reduce((sum, item) => sum + item.quantity, 0);
-  state.totalSum = state.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  state.totalSum = state.items.reduce((sum, item) => sum + item.priceCents * item.quantity, 0);
 };
 
 const cartSlice = createSlice({
@@ -28,7 +28,7 @@ const cartSlice = createSlice({
         state.items.push({
           productId: product.id,
           name: product.name,
-          price: product.price,
+          priceCents: product.priceCents,
           imageUrl: product.imageUrl,
           quantity,
         });

@@ -49,10 +49,12 @@ public class OrderService {
                 .user(user)
                 .note(req.note())
                 .status(OrderStatus.NEW)
+                .address(req.address())  // 🔥 ВОТ ЭТО ДОБАВЬ
                 .build();
 
+
         List<OrderItem> items = req.items().stream().map(i -> {
-            var product = productRepo.findById(i.productId())   // i.productId() теперь Long
+            var product = productRepo.findById(i.productId())
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
                             "Product not found: " + i.productId()));
             return OrderItem.builder()
@@ -62,6 +64,7 @@ public class OrderService {
                     .priceCents(product.getPriceCents())
                     .build();
         }).toList();
+
 
         order.setItems(items);
 

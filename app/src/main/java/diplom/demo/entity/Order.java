@@ -23,6 +23,9 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
+    private String address;
+
     @ManyToOne(fetch = FetchType.LAZY)   // владелец заказа
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
