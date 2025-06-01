@@ -22,11 +22,9 @@ import java.util.List;
 @Transactional
 public class OrderService {
 
-    private final OrderRepository orderRepo;
+    private final OrderRepository  orderRepo;
     private final ProductRepository productRepo;
-    private final UserRepository userRepo;
-
-    /* ===== helpers ===== */
+    private final UserRepository    userRepo;
 
     private User current() {
         String username = (String) SecurityContextHolder.getContext()
@@ -34,24 +32,20 @@ public class OrderService {
         return userRepo.findByUsername(username);
     }
 
-    /* ===== public API ===== */
+    /* ---------- USER ---------- */
 
-    /** USER делает заказ */
     public OrderDto create(OrderRequest req) {
-
         if (req.items() == null || req.items().isEmpty())
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Order must contain at least one item");
 
         User user = current();
-
         Order order = Order.builder()
                 .user(user)
                 .note(req.note())
+                .address(req.address())
                 .status(OrderStatus.NEW)
-                .address(req.address())  // 🔥 ВОТ ЭТО ДОБАВЬ
                 .build();
-
 
         List<OrderItem> items = req.items().stream().map(i -> {
             var product = productRepo.findById(i.productId())
@@ -65,39 +59,39 @@ public class OrderService {
                     .build();
         }).toList();
 
-
         order.setItems(items);
-
         return OrderDto.from(orderRepo.save(order));
     }
 
-    /** USER – история */
     public List<OrderDto> history() {
         return orderRepo.findByUser(current())
                 .stream().map(OrderDto::from).toList();
     }
 
-    /** ADMIN – все заказы */
-/*    public List<OrderDto> findAll() {
-        if (current().getRole() != Role.ADMIN)
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Admin only");
-        return orderRepo.findAll().stream().map(OrderDto::from).toList();
-    }*/public Page<OrderDto> findAll(Pageable pageable) {
+    public OrderDto cancelOwn(Long id) {
+        Order o = orderRepo.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
 
-        return orderRepo.findAll(pageable)
-                .map(OrderDto::from);
+        if (!o.getUser().equals(current()))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Not your order");
+
+        if (o.getStatus() != OrderStatus.NEW)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only NEW orders can be cancelled");
+
+        o.setStatus(OrderStatus.CANCELLED);
+        return OrderDto.from(o);
     }
 
-    /** ADMIN – сменить статус */
-    public OrderDto setStatus(Long id, OrderStatus status) {
-        if (current().getRole() != Role.ADMIN)
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Admin only");
+    /* ---------- ADMIN ---------- */
 
+    public Page<OrderDto> findAll(Pageable pageable) {
+        return orderRepo.findAll(pageable).map(OrderDto::from);
+    }
+
+    public OrderDto adminSetStatus(Long id, OrderStatus status) {
         Order o = orderRepo.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Order not found"));
-        o.setStatus(status);
-        return OrderDto.from(o);        // dirty-check
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+        o.setStatus(status);            // админ может ставить любой статус
+        return OrderDto.from(o);
     }
 }
-

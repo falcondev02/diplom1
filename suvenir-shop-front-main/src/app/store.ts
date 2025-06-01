@@ -1,10 +1,10 @@
-
+// src/app/store.ts
 import { configureStore } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/query';
 import { api } from '../api';
 import authReducer from '../features/auth/authSlice';
 import cartReducer from '../features/cart/cartSlice';
-import { loadCartFromLocalStorage, saveCartToLocalStorage } from '../features/cart/cartMiddleware';
+import { cartMiddleware } from '../features/cart/cartMiddleware';
 
 export const store = configureStore({
   reducer: {
@@ -12,17 +12,14 @@ export const store = configureStore({
     auth: authReducer,
     cart: cartReducer,
   },
-  middleware: (getDefaultMiddleware) => 
+  middleware: getDefaultMiddleware =>
     getDefaultMiddleware()
       .concat(api.middleware)
-      .concat(saveCartToLocalStorage),
-  preloadedState: {
-    cart: loadCartFromLocalStorage(),
-  },
+      .concat(cartMiddleware),
+  // при старте ни у кого корзина не загружена; middleware после логина её подтянет
 });
 
 setupListeners(store.dispatch);
 
-// Экспорт типов для хуков
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

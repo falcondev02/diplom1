@@ -1,8 +1,9 @@
+// src/api/productsApi.ts
 import { api } from './index';
-import { Product, PaginatedResponse } from '../types';
+import type { Product, PaginatedResponse } from '../types';
 
 export const productsApi = api.injectEndpoints({
-  endpoints: (builder) => ({
+  endpoints: builder => ({
     getProducts: builder.query<PaginatedResponse<Product>, { page?: number; size?: number; categoryId?: number }>({
       query: ({ page = 0, size = 10, categoryId }) => ({
         url: '/api/products',
@@ -20,17 +21,15 @@ export const productsApi = api.injectEndpoints({
         })),
       }),
     }),
-
     getProduct: builder.query<Product, number>({
-      query: (id) => `/api/products/${id}`,
+      query: id => `/api/products/${id}`,
       transformResponse: (item: any): Product => ({
         ...item,
         price: item.priceCents / 100,
       }),
     }),
-
     createProduct: builder.mutation<Product, Partial<Product>>({
-      query: (newProduct) => {
+      query: newProduct => {
         const productToSend = {
           ...newProduct,
           priceCents: Math.round((newProduct.price || 0) * 100),
@@ -43,7 +42,6 @@ export const productsApi = api.injectEndpoints({
         };
       },
     }),
-
     updateProduct: builder.mutation<Product, { id: number; product: Partial<Product> }>({
       query: ({ id, product }) => {
         const productToSend = {
@@ -58,14 +56,14 @@ export const productsApi = api.injectEndpoints({
         };
       },
     }),
-
     deleteProduct: builder.mutation<void, number>({
-      query: (id) => ({
+      query: id => ({
         url: `/api/products/${id}`,
         method: 'DELETE',
       }),
     }),
   }),
+  overrideExisting: false,
 });
 
 export const {

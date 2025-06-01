@@ -7,4 +7,5 @@ import diplom.demo.entity.User;
 public interface UserRepository extends JpaRepository<User, Long> {
     // Чтобы можно было искать по username
     User findByUsername(String username);
+
 }

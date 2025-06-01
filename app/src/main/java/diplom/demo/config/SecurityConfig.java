@@ -29,7 +29,9 @@ public class SecurityConfig {
     /* ---------- beans ---------- */
 
     @Bean
-    public PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(); }
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
     @Bean
     public AuthenticationProvider authProvider(PasswordEncoder enc) {
@@ -52,51 +54,33 @@ public class SecurityConfig {
                 .cors().and().csrf().disable()
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Разрешить preflight-запросы (CORS)
+
+                        // 1) Pre-flight
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        /* --- ПУБЛИКА --- */
-                        .requestMatchers("/api/auth/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        // 2) Public endpoints
+                        .requestMatchers("/api/auth/**",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/users/**").permitAll()
 
-                        // Разрешаем только GET-запросы к заказам для авторизованных пользователей (user + admin)
-                        .requestMatchers(HttpMethod.GET, "/api/orders/**").permitAll()
+                        // 3) USER & ADMIN access:
+                        .requestMatchers(HttpMethod.POST,   "/api/orders").authenticated()              // оформить заказ
+                        .requestMatchers(HttpMethod.GET,    "/api/orders/self/**").authenticated()      // посмотреть свои заказы
+                        .requestMatchers(HttpMethod.DELETE, "/api/orders/self/**").authenticated()      // отменить свой заказ
+                        .requestMatchers(HttpMethod.PUT,    "/api/users/me/password").authenticated()   // сменить свой пароль
 
-                        /* --- ТОЛЬКО ADMIN --- */
-                        .requestMatchers(HttpMethod.OPTIONS, "/api/users/**").permitAll()
-                        .requestMatchers("/api/products/**").hasRole("ADMIN")        // POST/PUT/DELETE
-                        .requestMatchers("/api/categories/**").hasRole("ADMIN")      // POST/PUT/DELETE
-                        .requestMatchers("/api/orders/**").hasRole("ADMIN")          // POST/PUT/DELETE
+                        // 4) ADMIN-only endpoints:
+                        .requestMatchers(HttpMethod.GET,  "/api/orders").hasRole("ADMIN")               // список всех заказов
+                        .requestMatchers(HttpMethod.PUT,  "/api/orders/{id}/status").hasRole("ADMIN")    // сменить статус заказа
+                        .requestMatchers(HttpMethod.GET,  "/api/users/**").hasRole("ADMIN")              // CRUD пользователей (список, удаление)
+                        .requestMatchers("/api/products/**").hasRole("ADMIN")                            // CRUD товаров
+                        .requestMatchers("/api/categories/**").hasRole("ADMIN")                          // CRUD категорий
 
-                        /* --- всё остальное --- */
+                        // 5) Всё остальное (любой не описанный URL) – только авторизованные
                         .anyRequest().authenticated()
                 )
-
-               /* .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()   // <-- добавь!
-
-                        *//* --- ПУБЛИКА --- *//*
-                        .requestMatchers("/api/auth/**" ,              // login / register
-                                "/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/users/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/orders/**").permitAll()
-                        *//* --- НУЖЕН ЛЮБОЙ ЛОГИН --- *//*
-             //           .requestMatchers("/api/orders/**").authenticated()
-
-                        *//* --- ТОЛЬКО ADMIN --- *//*
-                        .requestMatchers(HttpMethod.OPTIONS, "/api/users/**").permitAll()
-                        .requestMatchers("/api/products/**").hasRole("ADMIN")       // POST/PUT/DELETE
-                        .requestMatchers("/api/categories/**").hasRole("ADMIN")     // POST/PUT/DELETE
-                        .requestMatchers("/api/orders/**").hasRole("ADMIN")     // POST/PUT/DELETE
-
-                        *//* --- всё остальное --- *//*
-                        .anyRequest().authenticated()
-                )*/
-
                 .authenticationProvider(authProvider(passwordEncoder()))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 

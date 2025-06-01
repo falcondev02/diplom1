@@ -1,6 +1,6 @@
-
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { CartItem, CartState, Product } from '../../types';
+// src/features/cart/cartSlice.ts
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import type { CartItem, CartState, Product } from "../../types";
 
 const initialState: CartState = {
   items: [],
@@ -8,24 +8,27 @@ const initialState: CartState = {
   totalSum: 0,
 };
 
-// Пересчет общего количества и суммы
-const recalculateTotals = (state: CartState) => {
-  state.totalQty = state.items.reduce((sum, item) => sum + item.quantity, 0);
-  state.totalSum = state.items.reduce((sum, item) => sum + item.priceCents * item.quantity, 0);
+const recalc = (s: CartState) => {
+  s.totalQty = s.items.reduce((sum, i) => sum + i.quantity, 0);
+  s.totalSum = s.items.reduce((sum, i) => sum + i.priceCents * i.quantity, 0);
 };
 
-const cartSlice = createSlice({
-  name: 'cart',
+export const cartSlice = createSlice({
+  name: "cart",
   initialState,
   reducers: {
-    addToCart: (state, action: PayloadAction<{ product: Product; quantity: number }>) => {
+    // Этот экшен установит массив CartItem[] и пересчитает totalQty/totalSum
+    setCart: (s, action: PayloadAction<CartItem[]>) => {
+      s.items = action.payload;
+      recalc(s);
+    },
+    addToCart: (s, action: PayloadAction<{ product: Product; quantity: number }>) => {
       const { product, quantity } = action.payload;
-      const existingItem = state.items.find(item => item.productId === product.id);
-      
-      if (existingItem) {
-        existingItem.quantity += quantity;
+      const existing = s.items.find((i) => i.productId === product.id);
+      if (existing) {
+        existing.quantity += quantity;
       } else {
-        state.items.push({
+        s.items.push({
           productId: product.id,
           name: product.name,
           priceCents: product.priceCents,
@@ -33,29 +36,27 @@ const cartSlice = createSlice({
           quantity,
         });
       }
-      
-      recalculateTotals(state);
+      recalc(s);
     },
-    removeFromCart: (state, action: PayloadAction<number>) => {
-      state.items = state.items.filter(item => item.productId !== action.payload);
-      recalculateTotals(state);
+    removeFromCart: (s, action: PayloadAction<number>) => {
+      s.items = s.items.filter((i) => i.productId !== action.payload);
+      recalc(s);
     },
-    updateQuantity: (state, action: PayloadAction<{ productId: number; quantity: number }>) => {
+    updateQuantity: (s, action: PayloadAction<{ productId: number; quantity: number }>) => {
       const { productId, quantity } = action.payload;
-      const item = state.items.find(item => item.productId === productId);
-      
+      const item = s.items.find((i) => i.productId === productId);
       if (item && quantity > 0) {
         item.quantity = quantity;
-        recalculateTotals(state);
+        recalc(s);
       }
     },
-    clearCart: (state) => {
-      state.items = [];
-      state.totalQty = 0;
-      state.totalSum = 0;
+    clearCart: (s) => {
+      s.items = [];
+      s.totalQty = 0;
+      s.totalSum = 0;
     },
   },
 });
 
-export const { addToCart, removeFromCart, updateQuantity, clearCart } = cartSlice.actions;
+export const { setCart, addToCart, removeFromCart, updateQuantity, clearCart } = cartSlice.actions;
 export default cartSlice.reducer;

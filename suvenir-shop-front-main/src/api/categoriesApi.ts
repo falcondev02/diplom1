@@ -1,25 +1,27 @@
+// src/api/categoriesApi.ts
 import { api } from './index';
-import { Category } from '../types';
+import type { Category } from '../types';
 
 export const categoriesApi = api.injectEndpoints({
-  endpoints: (builder) => ({
+  endpoints: builder => ({
     getCategories: builder.query<Category[], void>({
       query: () => '/api/categories',
     }),
     createCategory: builder.mutation<Category, Partial<Category>>({
-      query: (newCategory) => ({
+      query: newCategory => ({
         url: '/api/categories',
         method: 'POST',
         body: newCategory,
       }),
     }),
     deleteCategory: builder.mutation<void, number>({
-      query: (id) => ({
+      query: id => ({
         url: `/api/categories/${id}`,
         method: 'DELETE',
       }),
     }),
   }),
+  overrideExisting: false,
 });
 
 export const {

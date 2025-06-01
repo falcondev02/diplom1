@@ -5,7 +5,10 @@ import diplom.demo.repository.UserRepository;
 import diplom.demo.service.AuthService;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -15,10 +18,11 @@ public class AuthController {
     private final UserRepository userRepo;
 
     @PostMapping("/register")
-    public String register(@RequestBody AuthRequest request) {
-        authService.register(request.getUsername(), request.getPassword());
-        return "User registered";
+    public ResponseEntity<Map<String, String>> register(@RequestBody AuthRequest req) {
+        authService.register(req.getUsername(), req.getPassword());
+        return ResponseEntity.ok(Map.of("msg", "ok"));
     }
+
 
     @PostMapping("/login")
     public AuthResponse login(@RequestBody AuthRequest request) {
@@ -38,6 +42,7 @@ public class AuthController {
         private final String token;
         private final String username; // <- добавь
         private final String role;
+        // private final Long userId;
     }
 
 }

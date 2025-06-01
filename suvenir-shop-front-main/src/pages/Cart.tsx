@@ -1,4 +1,4 @@
-
+// src/pages/Cart.tsx
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -13,31 +13,35 @@ import {
   Divider,
 } from 'antd';
 import { DeleteOutlined, ShoppingOutlined } from '@ant-design/icons';
+// <-- Здесь “../app/hooks”, потому что Cart.tsx в src/pages/, а hooks.ts — в src/app/
 import { useAppSelector, useAppDispatch } from '../app/hooks';
+// <-- Здесь “../features/cart/cartSlice”, потому что Cart.tsx в src/pages/, 
+// а cartSlice.ts — в src/features/cart/
 import { removeFromCart, updateQuantity } from '../features/cart/cartSlice';
-import { CartItem } from '../types';
+// Типы лежат в src/types.ts, поэтому тоже “../types”
+import type { CartItem as CartItemType } from '../types';
 
 const { Title, Text } = Typography;
 
 const Cart: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { items, totalQty, totalSum } = useAppSelector((state) => state.cart);
-  
+  const { items, totalQty, totalSum } = useAppSelector(state => state.cart);
+
   const handleQuantityChange = (productId: number, quantity: number) => {
     dispatch(updateQuantity({ productId, quantity }));
   };
-  
+
   const handleRemoveItem = (productId: number) => {
     dispatch(removeFromCart(productId));
   };
-  
+
   const columns = [
     {
       title: 'Товар',
       dataIndex: 'name',
       key: 'name',
-      render: (_: string, record: CartItem) => (
+      render: (_: string, record: CartItemType) => (
         <div className="flex items-center">
           <Image
             src={record.imageUrl || 'https://placehold.co/80x80?text=Нет+фото'}
@@ -55,29 +59,29 @@ const Cart: React.FC = () => {
       title: 'Цена',
       dataIndex: 'priceCents',
       key: 'priceCents',
-      render: (priceCents: number) => `${priceCents.toLocaleString('ru-RU')} ₽`,
+      render: (priceCents: number) => `${(priceCents).toLocaleString('ru-RU')} ₽`,
     },
     {
       title: 'Количество',
       key: 'quantity',
-      render: (_: any, record: CartItem) => (
+      render: (_: any, record: CartItemType) => (
         <InputNumber
           min={1}
           value={record.quantity}
-          onChange={(value) => handleQuantityChange(record.productId, value || 1)}
+          onChange={value => handleQuantityChange(record.productId, value || 1)}
         />
       ),
     },
     {
       title: 'Сумма',
       key: 'total',
-      render: (_: any, record: CartItem) => 
-        `${(record.priceCents * record.quantity).toLocaleString('ru-RU')} ₽`,
+      render: (_: any, record: CartItemType) =>
+        `${((record.priceCents * record.quantity)).toLocaleString('ru-RU')} ₽`,
     },
     {
       title: 'Действия',
       key: 'actions',
-      render: (_: any, record: CartItem) => (
+      render: (_: any, record: CartItemType) => (
         <Button
           type="text"
           danger
@@ -89,7 +93,7 @@ const Cart: React.FC = () => {
       ),
     },
   ];
-  
+
   if (items.length === 0) {
     return (
       <div className="text-center p-8">
@@ -108,12 +112,12 @@ const Cart: React.FC = () => {
       </div>
     );
   }
-  
+
   return (
     <div>
       <Title level={2}>Корзина</Title>
       <Divider />
-      
+
       <div className="flex flex-col lg:flex-row gap-6">
         <div className="lg:w-2/3">
           <Table
@@ -123,25 +127,22 @@ const Cart: React.FC = () => {
             pagination={false}
           />
         </div>
-        
+
         <div className="lg:w-1/3">
           <Card className="sticky top-6">
             <Title level={4}>Сводка заказа</Title>
             <Space direction="vertical" className="w-full">
               <div className="flex justify-between">
                 <Text>Товары ({totalQty}):</Text>
-                <Text>{totalSum.toLocaleString('ru-RU')} ₽</Text>
+                <Text>{(totalSum).toLocaleString('ru-RU')} ₽</Text>
               </div>
-              
               <Divider />
-              
               <div className="flex justify-between">
                 <Text strong>Итого:</Text>
                 <Title level={4} className="m-0 text-blue-600">
-                  {totalSum.toLocaleString('ru-RU')} ₽
+                  {(totalSum).toLocaleString('ru-RU')} ₽
                 </Title>
               </div>
-              
               <Button
                 type="primary"
                 size="large"
