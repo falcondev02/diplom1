@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -27,6 +28,9 @@ public class OrderService {
     private final UserRepository    userRepo;
 
     private User current() {
+        /*Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();  // ← это всегда корректно!
+        return userRepo.findByUsername(username);*/
         String username = (String) SecurityContextHolder.getContext()
                 .getAuthentication().getPrincipal();
         return userRepo.findByUsername(username);
@@ -44,7 +48,7 @@ public class OrderService {
                 .user(user)
                 .note(req.note())
                 .address(req.address())
-                .status(OrderStatus.NEW)
+                .status(OrderStatus.PENDING)
                 .build();
 
         List<OrderItem> items = req.items().stream().map(i -> {

@@ -1,3 +1,4 @@
+// src/main/java/diplom/demo/controller/ProductController.java
 package diplom.demo.controller;
 
 import diplom.demo.dto.ProductDto;
@@ -7,7 +8,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,15 +18,25 @@ public class ProductController {
 
     private final ProductService service;
 
-    @Operation(summary = "Каталог - все товары")
+    @Operation(summary = "Каталог - все товары (с опцией фильтра по категории)")
     @GetMapping
     public ResponseEntity<Page<ProductDto>> all(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) Long categoryId // ← добавили
     ) {
-        return ResponseEntity.ok(service.findAll(PageRequest.of(page, size)));
+        if (categoryId != null) {
+            // Если пришёл параметр categoryId, вызываем метод фильтрации
+            return ResponseEntity.ok(
+                    service.findByCategory(categoryId, PageRequest.of(page, size))
+            );
+        } else {
+            // Иначе — просто всё
+            return ResponseEntity.ok(
+                    service.findAll(PageRequest.of(page, size))
+            );
+        }
     }
-
 
     @Operation(summary = "Детали товара")
     @GetMapping("{id}")
@@ -35,12 +45,10 @@ public class ProductController {
     }
 
     /* ==== ADMIN ==== */
-
     @SecurityRequirement(name = "Bearer Authentication")
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public ProductDto create(@RequestBody ProductDto dto) {
-        return service.create(dto);
+    public ResponseEntity<ProductDto> create(@RequestBody ProductDto dto) {
+        return ResponseEntity.status(201).body(service.create(dto));
     }
 
     @SecurityRequirement(name = "Bearer Authentication")
@@ -51,8 +59,8 @@ public class ProductController {
 
     @SecurityRequirement(name = "Bearer Authentication")
     @DeleteMapping("{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

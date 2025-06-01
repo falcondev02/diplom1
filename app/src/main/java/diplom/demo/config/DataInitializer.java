@@ -135,7 +135,7 @@ public class DataInitializer implements CommandLineRunner {
         /* ---------- демо-заказ для Alice ---------- */
         Order demoOrder = Order.builder()
                 .user(alice)
-                .status(OrderStatus.NEW)
+                .status(OrderStatus.PENDING)
                 .note("На чёрной футболке текст «Hello, World!»")
                 .address("г. Челябинск, пр-т Ленина, д. 1")  // ✅ или любой другой фиктивный адрес
                 .build();

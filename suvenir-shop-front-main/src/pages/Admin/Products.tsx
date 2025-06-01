@@ -48,7 +48,10 @@ const AdminProducts: React.FC = () => {
 
   const showEditModal = (product: Product) => {
     setEditingProduct(product);
-    form.setFieldsValue(product);
+    form.setFieldsValue({
+    ...product,
+    price: product.priceCents / 100, // тут конвертируем копейки → рубли
+  });
     setIsModalVisible(true);
   };
 
@@ -56,21 +59,32 @@ const AdminProducts: React.FC = () => {
     setIsModalVisible(false);
   };
 
-  const handleFormSubmit = async () => {
-    try {
-      const values = await form.validateFields();
-      if (editingProduct) {
-        await updateProduct({ id: editingProduct.id, product: values }).unwrap();
-        notification.success({ message: 'Товар обновлен' });
-      } else {
-        await createProduct(values).unwrap();
-        notification.success({ message: 'Товар создан' });
-      }
-      setIsModalVisible(false);
-    } catch (error) {
-      console.error('Ошибка при сохранении товара:', error);
+const handleFormSubmit = async () => {
+  try {
+    const values = await form.validateFields();
+    if (editingProduct) {
+      await updateProduct({
+        id: editingProduct.id,
+        product: {
+          ...values,
+          // values.price — это рубли, переводим в копейки:
+          priceCents: Math.round((values.price || 0) * 100),
+        },
+      }).unwrap();
+      notification.success({ message: 'Товар обновлён' });
+    } else {
+      await createProduct({
+        ...values,
+        priceCents: Math.round((values.price || 0) * 100),
+      }).unwrap();
+      notification.success({ message: 'Товар создан' });
     }
-  };
+    setIsModalVisible(false);
+  } catch (error) {
+    console.error('Ошибка при сохранении товара:', error);
+  }
+};
+
 
   const handleDelete = async (id: number) => {
     try {
@@ -193,11 +207,14 @@ const AdminProducts: React.FC = () => {
           </Form.Item>
 
           <Form.Item
-            name="priceCents"
-            label="Цена (в копейках)"
+            name="price"
+            label="Цена"
             rules={[{ required: true, message: 'Укажите цену' }]}
           >
-            <InputNumber min={0} step={100} style={{ width: '100%' }} />
+            <InputNumber min={0} step={0.01} style={{ width: '100%' }}
+            formatter={(value) => `${Number(value || 0).toLocaleString('ru-RU')} ₽`}
+    parser={(value) => value?.replace(/\s?₽|\s/g, '') || ''}
+     />
           </Form.Item>
 
           <Form.Item

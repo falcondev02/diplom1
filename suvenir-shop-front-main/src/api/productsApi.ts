@@ -32,7 +32,7 @@ export const productsApi = api.injectEndpoints({
       query: newProduct => {
         const productToSend = {
           ...newProduct,
-          priceCents: Math.round((newProduct.price || 0) * 100),
+          priceCents: Math.round((newProduct.price || 0)),
         };
         delete (productToSend as any).price;
         return {
@@ -46,7 +46,7 @@ export const productsApi = api.injectEndpoints({
       query: ({ id, product }) => {
         const productToSend = {
           ...product,
-          priceCents: Math.round((product.price || 0) * 100),
+          priceCents: Math.round((product.price || 0)),
         };
         delete (productToSend as any).price;
         return {

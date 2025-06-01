@@ -1,3 +1,4 @@
+// src/main/java/diplom/demo/service/ProductService.java
 package diplom.demo.service;
 
 import diplom.demo.dto.ProductDto;
@@ -36,11 +37,17 @@ public class ProductService {
         }
     }
 
+    // --------------- новый метод: найти по категории ---------------
+    public Page<ProductDto> findByCategory(Long categoryId, Pageable pageable) {
+        return repo.findAllByCategory_Id(categoryId, pageable)
+                .map(ProductDto::from);
+    }
+
+    // --------------- существующие методы ---------------
     public Page<ProductDto> findAll(Pageable pageable) {
         return repo.findAll(pageable)
                 .map(ProductDto::from);
     }
-
 
     public ProductDto findOne(Long id) {
         return ProductDto.from(repo.findById(id)
@@ -57,7 +64,7 @@ public class ProductService {
                 .description(dto.description())
                 .priceCents(dto.priceCents())
                 .imageUrl(dto.imageUrl())
-                .inStock(dto.inStock())          // 🆕
+                .inStock(dto.inStock())
                 .category(category)
                 .build();
 
@@ -77,16 +84,16 @@ public class ProductService {
         existing.setPriceCents(dto.priceCents());
         existing.setImageUrl(dto.imageUrl());
         existing.setCategory(category);
-        existing.setInStock(dto.inStock());      // 🆕
+        existing.setInStock(dto.inStock());
 
         return ProductDto.from(existing);
     }
 
-
     public void delete(Long id) {
         adminGuard();
-        if (!repo.existsById(id))
+        if (!repo.existsById(id)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found");
+        }
         repo.deleteById(id);
     }
 }

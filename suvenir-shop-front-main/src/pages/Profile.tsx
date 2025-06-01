@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import { Typography, Card, Form, Input, Button, notification, Tabs } from 'antd';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { useAppSelector } from '../app/hooks';
+import { useChangePasswordMutation } from '../api/usersApi'; // путь может отличаться!
+
 
 const { Title } = Typography;
 const { TabPane } = Tabs;
@@ -11,19 +13,29 @@ const Profile: React.FC = () => {
   const { username } = useAppSelector((state) => state.auth);
   const [isLoading, setIsLoading] = useState(false);
   
-  // Для демонстрационных целей просто имитируем запрос на сервер
-  const handlePasswordChange = (values: { currentPassword: string; newPassword: string }) => {
-    setIsLoading(true);
-    
-    // Имитация запроса на сервер
-    setTimeout(() => {
-      setIsLoading(false);
-      notification.success({
-        message: 'Пароль изменен',
-        description: 'Ваш пароль был успешно изменен.',
-      });
-    }, 1000);
-  };
+  const [changePassword] = useChangePasswordMutation();
+
+const handlePasswordChange = async (values: { currentPassword: string; newPassword: string }) => {
+  setIsLoading(true);
+  try {
+    await changePassword({
+      oldPassword: values.currentPassword,
+      newPassword: values.newPassword,
+    }).unwrap();
+    notification.success({
+      message: 'Пароль изменен',
+      description: 'Ваш пароль был успешно изменен.',
+    });
+  } catch (e) {
+    notification.error({
+      message: 'Ошибка',
+      description: 'Не удалось изменить пароль. Проверьте текущий пароль.',
+    });
+  } finally {
+    setIsLoading(false);
+  }
+};
+
   
   const handleUsernameChange = (values: { username: string }) => {
     setIsLoading(true);

@@ -4,9 +4,11 @@ import diplom.demo.dto.PasswordChangeRequest;
 import diplom.demo.dto.UserDto;
 import diplom.demo.dto.UserRequest;
 import diplom.demo.entity.User;
+import diplom.demo.repository.UserRepository;
 import diplom.demo.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -14,9 +16,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.security.Principal;
 import java.util.Map;
 
 @RestController
@@ -34,7 +38,7 @@ public class UserController {
         return ResponseEntity.ok(Map.of("msg","ok"));   // 200 ⬅ фронт больше не орёт
     }
 
-    @PatchMapping("/me/password")
+    @PutMapping("/me/password")
     public ResponseEntity<?> changeOwn(Authentication a,
                                        @RequestBody PasswordChangeRequest b){
         userService.changePassword(a.getName(), b);
@@ -57,7 +61,11 @@ public class UserController {
                                                  @RequestParam(defaultValue = "10") int size) {
         return ResponseEntity.ok(userService.getAllUsers(PageRequest.of(page, size)));
     }
-
-    /* -------- смена пароля пользователем -------- */
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping
+    public ResponseEntity<UserDto> create(@RequestBody UserRequest r) {
+        User user = userService.createUser(r);
+        return ResponseEntity.ok(UserDto.from(user));
+    }
 
 }
